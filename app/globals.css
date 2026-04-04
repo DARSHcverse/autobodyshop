@@ -1,0 +1,206 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-display: 'Noto Serif', Georgia, serif;
+  --font-body: 'Space Grotesk', 'Segoe UI', sans-serif;
+  --gold: #fbbf24;
+  --gold-strong: #d97706;
+  --gold-deep: #6c4f00;
+  --dark: #050505;
+  --darker: #0e0e0e;
+  --card: #111111;
+  --card-low: #1c1b1b;
+  --card-high: #2a2a2a;
+  --border: rgba(79, 70, 51, 0.4);
+  --outline-variant: #4f4633;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  border-radius: 0 !important; /* Brutalism: No border radius */
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: white;
+  background: var(--darker);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: rgba(251, 191, 36, 0.2);
+  color: white;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--darker);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--outline-variant);
+  border-radius: 0 !important;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold-strong);
+}
+
+.gold-text {
+  color: var(--gold);
+}
+
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.gold-border {
+  border: 1px solid rgba(79, 70, 51, 0.2);
+  background: var(--card-low);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 40px 100px rgba(0, 0, 0, 0.8);
+}
+
+.gold-border:hover {
+  background: var(--card-high);
+}
+
+.hero-glow {
+  position: absolute;
+  filter: blur(80px);
+  opacity: 0.05;
+  animation: spotlight 4s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.card-hover {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.card-hover:hover {
+  background-color: var(--card-high);
+  border-color: rgba(251, 191, 36, 0.3);
+}
+
+.fade-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.fade-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-divider {
+  height: 1px;
+  background: transparent;
+}
+
+.btn-gold {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid transparent;
+  background: var(--gold);
+  color: var(--gold-deep);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition:
+    background-color 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.btn-gold:hover {
+  background: var(--gold-strong);
+  color: #111111;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+}
+
+.btn-outline-gold {
+  border: 1px solid rgba(79, 70, 51, 0.4);
+  background: transparent;
+  color: var(--gold);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.btn-outline-gold:hover {
+  border-color: var(--gold);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.grid-bg {
+  background-color: var(--dark);
+}
+
+.navbar-glass {
+  background: rgba(28, 27, 27, 0.6);
+  border-bottom: 1px solid rgba(79, 70, 51, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.stat-card {
+  border: 1px solid rgba(79, 70, 51, 0.2);
+  background: var(--card-low);
+}
+
+.service-icon {
+  background: transparent;
+  color: var(--gold);
+}
+
+.form-input {
+  border: 0;
+  border-bottom: 1px solid rgba(79, 70, 51, 0.4);
+  background: transparent;
+  color: white;
+  transition:
+    border-color 0.25s ease,
+    background-color 0.25s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-bottom-color: var(--gold);
+  background: rgba(251, 191, 36, 0.03);
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
