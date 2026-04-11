@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import VehicleCard, { type VehicleCardData } from '../components/VehicleCard'
+import VehicleCard from '../../components/VehicleCard'
+import { INVENTORY, type InventoryVehicle } from '../../data/inventory'
 
 export const metadata: Metadata = {
   title: 'Used Cars for Sale Melbourne | Crown Auto Trading Inventory',
@@ -20,125 +21,24 @@ export const metadata: Metadata = {
   },
 }
 
-const allCars: VehicleCardData[] = [
-  {
-    make: 'Toyota',
-    model: 'Camry',
-    year: 2021,
-    price: 28500,
-    km: 35000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'Sedan',
-    badge: 'Best Value',
-    accent: 'from-rose-400/18 via-transparent to-orange-400/8',
-    badgeTone: 'border-rose-300/30 bg-rose-400/10 text-rose-100',
-  },
-  {
-    make: 'Mazda',
-    model: 'CX-5',
-    year: 2022,
-    price: 34900,
-    km: 22000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Premium Pick',
-    accent: 'from-amber-400/18 via-transparent to-yellow-400/8',
-    badgeTone: 'border-gold-300/30 bg-gold-400/12 text-gold-100',
-  },
-  {
-    make: 'Honda',
-    model: 'Civic',
-    year: 2020,
-    price: 22900,
-    km: 48000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'Sedan',
-    badge: 'Value Pick',
-    accent: 'from-blue-400/18 via-transparent to-cyan-400/10',
-    badgeTone: 'border-blue-300/30 bg-blue-400/10 text-blue-100',
-  },
-  {
-    make: 'Hyundai',
-    model: 'Tucson',
-    year: 2021,
-    price: 31500,
-    km: 29000,
-    fuel: 'Diesel',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'New Arrival',
-    accent: 'from-emerald-400/18 via-transparent to-teal-400/10',
-    badgeTone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100',
-  },
-  {
-    make: 'Ford',
-    model: 'Ranger',
-    year: 2020,
-    price: 38900,
-    km: 55000,
-    fuel: 'Diesel',
-    trans: 'Manual',
-    body: 'Ute',
-    badge: '4WD Ready',
-    accent: 'from-sky-400/18 via-transparent to-cyan-400/10',
-    badgeTone: 'border-sky-300/30 bg-sky-400/10 text-sky-100',
-  },
-  {
-    make: 'Kia',
-    model: 'Sportage',
-    year: 2022,
-    price: 33500,
-    km: 18000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Low KMs',
-    accent: 'from-fuchsia-400/16 via-transparent to-violet-400/10',
-    badgeTone: 'border-fuchsia-300/30 bg-fuchsia-400/10 text-fuchsia-100',
-  },
-  {
-    make: 'Subaru',
-    model: 'Forester',
-    year: 2021,
-    price: 35900,
-    km: 25000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'AWD',
-    accent: 'from-cyan-400/18 via-transparent to-sky-400/10',
-    badgeTone: 'border-cyan-300/30 bg-cyan-400/10 text-cyan-100',
-  },
-  {
-    make: 'Toyota',
-    model: 'RAV4',
-    year: 2020,
-    price: 36500,
-    km: 42000,
-    fuel: 'Hybrid',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Hybrid',
-    accent: 'from-lime-400/18 via-transparent to-emerald-400/10',
-    badgeTone: 'border-lime-300/30 bg-lime-400/10 text-lime-100',
-  },
-  {
-    make: 'Nissan',
-    model: 'X-Trail',
-    year: 2021,
-    price: 32500,
-    km: 31000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Popular',
-    accent: 'from-orange-400/18 via-transparent to-yellow-400/8',
-    badgeTone: 'border-orange-300/30 bg-orange-400/10 text-orange-100',
-  },
-]
+function toCardData(v: InventoryVehicle) {
+  return {
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    price: v.price,
+    km: v.odometer,
+    fuel: v.fuelType,
+    trans: v.transmission,
+    body: v.bodyType,
+    badge: v.badge,
+    accent: v.accent,
+    badgeTone: v.badgeTone,
+  }
+}
+
+// Only show available vehicles on the public site
+const availableCars = INVENTORY.filter(v => v.status === 'Available')
 
 export default function InventoryPage() {
   return (
@@ -153,8 +53,7 @@ export default function InventoryPage() {
             Vehicle <span className="gold-text">inventory</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-8 text-white/58">
-            A cleaner inventory presentation for inspected stock, clear pricing, and easier
-            comparison before you enquire.
+            {availableCars.length} vehicles available. All inspected, clearly priced, ready to view.
           </p>
         </div>
       </div>
@@ -188,10 +87,10 @@ export default function InventoryPage() {
 
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {allCars.map((car) => (
+          {availableCars.map((car) => (
             <VehicleCard
-              key={`${car.year}-${car.make}-${car.model}`}
-              car={car}
+              key={car.id}
+              car={toCardData(car)}
               href="/contact"
               ctaLabel="Enquire Now"
             />

@@ -1,7 +1,5 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import Navbar from './components/Navbar'
-import Footer from './components/Footer'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://crownautotrading.com.au'),
@@ -122,9 +120,7 @@ export default function RootLayout({
         />
       </head>
       <body className="bg-crown-lowest font-body text-white antialiased">
-        <Navbar />
-        <main>{children}</main>
-        <Footer />
+        {children}
       </body>
     </html>
   )

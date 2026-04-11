@@ -1,60 +1,22 @@
 import Link from 'next/link'
-import VehicleCard, { type VehicleCardData } from './VehicleCard'
+import VehicleCard from './VehicleCard'
+import { FEATURED_INVENTORY, type InventoryVehicle } from '../data/inventory'
 
-const cars: VehicleCardData[] = [
-  {
-    make: 'Mazda',
-    model: 'CX-5',
-    year: 2022,
-    price: 34900,
-    km: 22000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Premium Pick',
-    accent: 'from-gold-400/18 via-transparent to-gold-400/8',
-    badgeTone: 'border-gold-300/30 bg-gold-400/12 text-gold-100',
-  },
-  {
-    make: 'Toyota',
-    model: 'Camry',
-    year: 2021,
-    price: 28500,
-    km: 35000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'Sedan',
-    badge: 'Best Value',
-    accent: 'from-rose-400/18 via-transparent to-orange-400/8',
-    badgeTone: 'border-rose-300/30 bg-rose-400/10 text-rose-100',
-  },
-  {
-    make: 'Ford',
-    model: 'Ranger',
-    year: 2020,
-    price: 38900,
-    km: 55000,
-    fuel: 'Diesel',
-    trans: 'Manual',
-    body: 'Ute',
-    badge: '4WD Ready',
-    accent: 'from-cyan-400/18 via-transparent to-cyan-400/10',
-    badgeTone: 'border-teal-300/30 bg-cyan-400/10 text-cyan-100',
-  },
-  {
-    make: 'Kia',
-    model: 'Sportage',
-    year: 2022,
-    price: 33500,
-    km: 18000,
-    fuel: 'Petrol',
-    trans: 'Automatic',
-    body: 'SUV',
-    badge: 'Low KMs',
-    accent: 'from-emerald-400/18 via-transparent to-emerald-400/10',
-    badgeTone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100',
-  },
-]
+function toCardData(v: InventoryVehicle) {
+  return {
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    price: v.price,
+    km: v.odometer,
+    fuel: v.fuelType,
+    trans: v.transmission,
+    body: v.bodyType,
+    badge: v.badge,
+    accent: v.accent,
+    badgeTone: v.badgeTone,
+  }
+}
 
 export default function FeaturedInventory() {
   return (
@@ -82,8 +44,8 @@ export default function FeaturedInventory() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {cars.map((car) => (
-            <VehicleCard key={`${car.year}-${car.make}-${car.model}`} car={car} href="/inventory" />
+          {FEATURED_INVENTORY.map((car) => (
+            <VehicleCard key={car.id} car={toCardData(car)} href="/inventory" />
           ))}
         </div>
       </div>

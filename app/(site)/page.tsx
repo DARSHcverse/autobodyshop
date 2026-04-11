@@ -1,11 +1,11 @@
 import type { Metadata } from 'next'
-import HeroSection from './components/HeroSection'
-import StatsSection from './components/StatsSection'
-import ServicesPreview from './components/ServicesPreview'
-import FeaturedInventory from './components/FeaturedInventory'
-import WhyChooseUs from './components/WhyChooseUs'
-import Testimonials from './components/Testimonials'
-import CTABanner from './components/CTABanner'
+import HeroSection from '../components/HeroSection'
+import StatsSection from '../components/StatsSection'
+import ServicesPreview from '../components/ServicesPreview'
+import FeaturedInventory from '../components/FeaturedInventory'
+import WhyChooseUs from '../components/WhyChooseUs'
+import Testimonials from '../components/Testimonials'
+import CTABanner from '../components/CTABanner'
 
 export const metadata: Metadata = {
   title: 'Crown Auto Trading | Premium Used Cars & Auto Repairs Melbourne',
