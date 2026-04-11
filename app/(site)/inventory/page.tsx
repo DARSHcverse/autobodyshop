@@ -1,46 +1,29 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import VehicleCard from '../../components/VehicleCard'
-import { INVENTORY, type InventoryVehicle } from '../../data/inventory'
+import { getInventory, type InventoryVehicle } from '../../data/getInventory'
+
+export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
   title: 'Used Cars for Sale Melbourne | Crown Auto Trading Inventory',
   description:
     "Browse Crown Auto Trading's full inventory of quality pre-owned vehicles in Tarneit, Melbourne. Sedans, SUVs, utes and more. All cars inspected and come with history reports.",
-  keywords: [
-    'used cars for sale Melbourne',
-    'second hand cars Tarneit',
-    'buy used SUV Melbourne',
-    'affordable cars Tarneit 3029',
-    'pre-owned cars Melbourne',
-  ],
-  openGraph: {
-    title: 'Used Cars for Sale Melbourne | Crown Auto Trading',
-    description: 'Quality pre-owned vehicles at competitive prices. Browse our full inventory in Tarneit, Melbourne.',
-    url: 'https://crownautotrading.com.au/inventory',
-  },
 }
 
 function toCardData(v: InventoryVehicle) {
   return {
-    make: v.make,
-    model: v.model,
-    year: v.year,
-    price: v.price,
-    km: v.odometer,
-    fuel: v.fuelType,
-    trans: v.transmission,
-    body: v.bodyType,
-    badge: v.badge,
-    accent: v.accent,
-    badgeTone: v.badgeTone,
+    make: v.make, model: v.model, year: v.year,
+    price: v.price, km: v.odometer,
+    fuel: v.fuelType, trans: v.transmission, body: v.bodyType,
+    badge: v.badge, accent: v.accent, badgeTone: v.badgeTone,
   }
 }
 
-// Only show available vehicles on the public site
-const availableCars = INVENTORY.filter(v => v.status === 'Available')
+export default async function InventoryPage() {
+  const all = await getInventory()
+  const available = all.filter(v => v.status === 'Available')
 
-export default function InventoryPage() {
   return (
     <div className="min-h-screen pb-20 pt-24">
       <div className="relative overflow-hidden py-16">
@@ -53,7 +36,7 @@ export default function InventoryPage() {
             Vehicle <span className="gold-text">inventory</span>
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-8 text-white/58">
-            {availableCars.length} vehicles available. All inspected, clearly priced, ready to view.
+            {available.length} vehicles available. All inspected, clearly priced, ready to view.
           </p>
         </div>
       </div>
@@ -62,38 +45,24 @@ export default function InventoryPage() {
         <div className="gold-border flex flex-wrap gap-3 rounded-[28px] p-5">
           <select className="form-input rounded-full bg-crown-low px-4 py-3 text-sm">
             <option value="">All Body Types</option>
-            <option>Sedan</option>
-            <option>SUV</option>
-            <option>Ute</option>
-            <option>Hatchback</option>
+            <option>Sedan</option><option>SUV</option><option>Ute</option><option>Hatchback</option>
           </select>
           <select className="form-input rounded-full bg-crown-low px-4 py-3 text-sm">
             <option value="">All Fuel Types</option>
-            <option>Petrol</option>
-            <option>Diesel</option>
-            <option>Hybrid</option>
+            <option>Petrol</option><option>Diesel</option><option>Hybrid</option>
           </select>
           <select className="form-input rounded-full bg-crown-low px-4 py-3 text-sm">
             <option value="">Price Range</option>
-            <option>Under $25,000</option>
-            <option>$25,000 – $35,000</option>
-            <option>Over $35,000</option>
+            <option>Under $25,000</option><option>$25,000 – $35,000</option><option>Over $35,000</option>
           </select>
-          <button className="btn-gold ml-auto rounded-full px-6 py-3 text-[0.68rem]">
-            Search
-          </button>
+          <button className="btn-gold ml-auto rounded-full px-6 py-3 text-[0.68rem]">Search</button>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-6">
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-          {availableCars.map((car) => (
-            <VehicleCard
-              key={car.id}
-              car={toCardData(car)}
-              href="/contact"
-              ctaLabel="Enquire Now"
-            />
+          {available.map((car) => (
+            <VehicleCard key={car.id} car={toCardData(car)} href="/contact" ctaLabel="Enquire Now" />
           ))}
         </div>
 
@@ -104,12 +73,9 @@ export default function InventoryPage() {
               Don&apos;t see what you&apos;re looking for?
             </h3>
             <p className="mx-auto mt-4 max-w-xl text-white/58">
-              Tell us what you want and we&apos;ll source it with the same presentation and buying support.
+              Tell us what you want and we&apos;ll source it.
             </p>
-            <Link
-              href="/contact"
-              className="btn-gold mt-7 inline-flex rounded-full px-8 py-4 text-[0.72rem]"
-            >
+            <Link href="/contact" className="btn-gold mt-7 inline-flex rounded-full px-8 py-4 text-[0.72rem]">
               Contact Us
             </Link>
           </div>

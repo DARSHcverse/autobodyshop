@@ -430,6 +430,50 @@ function VehicleForm({ initial, onSave, onClose }: { initial: VehicleFormData; o
   );
 }
 
+// Accent styles mapped per badge for new vehicles
+const ACCENT_MAP: Record<string, { accent: string; badgeTone: string }> = {
+  'Premium Pick': { accent: 'from-amber-400/18 via-transparent to-yellow-400/8', badgeTone: 'border-gold-300/30 bg-gold-400/12 text-gold-100' },
+  'Best Value':   { accent: 'from-rose-400/18 via-transparent to-orange-400/8',  badgeTone: 'border-rose-300/30 bg-rose-400/10 text-rose-100' },
+  '4WD Ready':    { accent: 'from-sky-400/18 via-transparent to-cyan-400/10',    badgeTone: 'border-sky-300/30 bg-sky-400/10 text-sky-100' },
+  'Low KMs':      { accent: 'from-fuchsia-400/16 via-transparent to-violet-400/10', badgeTone: 'border-fuchsia-300/30 bg-fuchsia-400/10 text-fuchsia-100' },
+  'Hybrid':       { accent: 'from-lime-400/18 via-transparent to-emerald-400/10', badgeTone: 'border-lime-300/30 bg-lime-400/10 text-lime-100' },
+  'New Arrival':  { accent: 'from-emerald-400/18 via-transparent to-teal-400/10', badgeTone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100' },
+  'Popular':      { accent: 'from-orange-400/18 via-transparent to-yellow-400/8', badgeTone: 'border-orange-300/30 bg-orange-400/10 text-orange-100' },
+  'AWD':          { accent: 'from-cyan-400/18 via-transparent to-sky-400/10',    badgeTone: 'border-cyan-300/30 bg-cyan-400/10 text-cyan-100' },
+  'Value Pick':   { accent: 'from-blue-400/18 via-transparent to-cyan-400/10',   badgeTone: 'border-blue-300/30 bg-blue-400/10 text-blue-100' },
+  'Featured':     { accent: 'from-amber-400/18 via-transparent to-yellow-400/8', badgeTone: 'border-gold-300/30 bg-gold-400/12 text-gold-100' },
+  'Must See':     { accent: 'from-red-400/18 via-transparent to-rose-400/10',    badgeTone: 'border-red-300/30 bg-red-400/10 text-red-100' },
+};
+const DEFAULT_ACCENT = { accent: 'from-slate-400/18 via-transparent to-slate-400/8', badgeTone: 'border-slate-300/30 bg-slate-400/10 text-slate-100' };
+
+// Converts admin Vehicle → the shape the website expects
+function toWebsiteShape(v: Vehicle) {
+  const { accent, badgeTone } = ACCENT_MAP[v.badge] || DEFAULT_ACCENT;
+  return {
+    id: v.id, make: v.make, model: v.model, year: v.year,
+    bodyType: v.bodyType, fuelType: v.fuelType, transmission: v.transmission,
+    odometer: v.odometer, price: v.price, badge: v.badge, status: v.status,
+    imageUrl: v.imageUrl, color: v.color, engineSize: v.engineSize, seats: v.seats,
+    featured: v.status === 'Available',
+    accent, badgeTone,
+  };
+}
+
+async function publishInventory(vehicles: Vehicle[], toast: (msg: string, type?: Toast['type']) => void) {
+  try {
+    const res = await fetch('/api/inventory', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-secret': 'crown2024' },
+      body: JSON.stringify({ inventory: vehicles.map(toWebsiteShape) }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    toast(`✓ Live — ${data.count} vehicles published to website`);
+  } catch (err) {
+    toast(`Save failed: ${err instanceof Error ? err.message : 'Unknown error'}`, 'error');
+  }
+}
+
 function InventoryModule({ vehicles, setVehicles, addActivity, toast }: {
   vehicles: Vehicle[];
   setVehicles: React.Dispatch<React.SetStateAction<Vehicle[]>>;
@@ -444,6 +488,7 @@ function InventoryModule({ vehicles, setVehicles, addActivity, toast }: {
   const [showAdd, setShowAdd] = useState(false);
   const [editVehicle, setEditVehicle] = useState<Vehicle | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   const filtered = vehicles.filter(v => {
     const q = search.toLowerCase();
@@ -455,82 +500,40 @@ function InventoryModule({ vehicles, setVehicles, addActivity, toast }: {
     return true;
   });
 
-  const handleAdd = (data: VehicleFormData) => {
+  // Publish updated list to API, then update local state
+  const save = async (updated: Vehicle[], label: string) => {
+    setSaving(true);
+    setVehicles(updated);
+    addActivity(label, 'Inventory');
+    await publishInventory(updated, toast);
+    setSaving(false);
+  };
+
+  const handleAdd = async (data: VehicleFormData) => {
     const v = { ...data, id: uid() };
-    setVehicles(p => [v, ...p]);
-    addActivity(`Added vehicle: ${data.year} ${data.make} ${data.model}`, 'Inventory');
-    toast('Vehicle added successfully');
+    const updated = [v, ...vehicles];
     setShowAdd(false);
+    await save(updated, `Added vehicle: ${data.year} ${data.make} ${data.model}`);
   };
 
-  const handleEdit = (data: VehicleFormData) => {
-    setVehicles(p => p.map(v => v.id === editVehicle!.id ? { ...data, id: v.id } : v));
-    addActivity(`Updated vehicle: ${data.year} ${data.make} ${data.model}`, 'Inventory');
-    toast('Vehicle updated');
+  const handleEdit = async (data: VehicleFormData) => {
+    const updated = vehicles.map(v => v.id === editVehicle!.id ? { ...data, id: v.id } : v);
     setEditVehicle(null);
+    await save(updated, `Updated vehicle: ${data.year} ${data.make} ${data.model}`);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     const v = vehicles.find(x => x.id === id)!;
-    setVehicles(p => p.filter(x => x.id !== id));
-    addActivity(`Deleted vehicle: ${v.year} ${v.make} ${v.model}`, 'Inventory');
-    toast('Vehicle deleted', 'error');
+    const updated = vehicles.filter(x => x.id !== id);
     setDeleteId(null);
+    await save(updated, `Deleted vehicle: ${v.year} ${v.make} ${v.model}`);
   };
 
-  const toggleSold = (id: string) => {
-    setVehicles(p => p.map(v => {
-      if (v.id !== id) return v;
-      const ns = v.status === 'Sold' ? 'Available' : 'Sold';
-      addActivity(`Marked ${v.year} ${v.make} ${v.model} as ${ns}`, 'Inventory');
-      toast(`Vehicle marked as ${ns}`);
-      return { ...v, status: ns };
-    }));
-  };
-
-  const exportToFile = () => {
-    // Map back to the accent/badgeTone defaults
-    const ACCENT_MAP: Record<string, { accent: string; badgeTone: string }> = {
-      'Premium Pick': { accent: 'from-amber-400/18 via-transparent to-yellow-400/8', badgeTone: 'border-gold-300/30 bg-gold-400/12 text-gold-100' },
-      'Best Value':   { accent: 'from-rose-400/18 via-transparent to-orange-400/8', badgeTone: 'border-rose-300/30 bg-rose-400/10 text-rose-100' },
-      '4WD Ready':    { accent: 'from-sky-400/18 via-transparent to-cyan-400/10', badgeTone: 'border-sky-300/30 bg-sky-400/10 text-sky-100' },
-      'Low KMs':      { accent: 'from-fuchsia-400/16 via-transparent to-violet-400/10', badgeTone: 'border-fuchsia-300/30 bg-fuchsia-400/10 text-fuchsia-100' },
-      'Hybrid':       { accent: 'from-lime-400/18 via-transparent to-emerald-400/10', badgeTone: 'border-lime-300/30 bg-lime-400/10 text-lime-100' },
-      'New Arrival':  { accent: 'from-emerald-400/18 via-transparent to-teal-400/10', badgeTone: 'border-emerald-300/30 bg-emerald-400/10 text-emerald-100' },
-      'Popular':      { accent: 'from-orange-400/18 via-transparent to-yellow-400/8', badgeTone: 'border-orange-300/30 bg-orange-400/10 text-orange-100' },
-      'AWD':          { accent: 'from-cyan-400/18 via-transparent to-sky-400/10', badgeTone: 'border-cyan-300/30 bg-cyan-400/10 text-cyan-100' },
-    };
-    const DEFAULT_ACCENT = { accent: 'from-slate-400/18 via-transparent to-slate-400/8', badgeTone: 'border-slate-300/30 bg-slate-400/10 text-slate-100' };
-
-    const lines = vehicles.map(v => {
-      const vis = v.status !== 'Sold';
-      const { accent, badgeTone } = ACCENT_MAP[v.badge] || DEFAULT_ACCENT;
-      return `  {
-    id: '${v.id}',
-    make: '${v.make}', model: '${v.model}', year: ${v.year},
-    bodyType: '${v.bodyType}', fuelType: '${v.fuelType}', transmission: '${v.transmission}',
-    odometer: ${v.odometer}, price: ${v.price}, badge: '${v.badge}', status: '${v.status}',
-    imageUrl: '${v.imageUrl}', color: '${v.color}', engineSize: '${v.engineSize}', seats: ${v.seats},
-    featured: ${vis},
-    accent: '${accent}',
-    badgeTone: '${badgeTone}',
-  }`;
-    });
-
-    const output = `// Auto-exported from Crown Auto Trading Admin — ${new Date().toLocaleString('en-AU')}
-// Paste this into: app/data/inventory.ts → replace the INVENTORY array
-
-export const INVENTORY: InventoryVehicle[] = [
-${lines.join(',\n')}
-];`;
-
-    navigator.clipboard.writeText(output).then(() => {
-      toast('Inventory data copied to clipboard — paste into app/data/inventory.ts and redeploy');
-    }).catch(() => {
-      // Fallback: open in new window
-      const w = window.open('', '_blank');
-      if (w) { w.document.write('<pre style="font-family:monospace;padding:20px;background:#0f1629;color:#e2e8f0;">' + output.replace(/</g, '&lt;') + '</pre>'); }
-    });
+  const toggleSold = async (id: string) => {
+    const v = vehicles.find(x => x.id === id)!;
+    const ns: Vehicle['status'] = v.status === 'Sold' ? 'Available' : 'Sold';
+    const updated = vehicles.map(x => x.id === id ? { ...x, status: ns } : x);
+    await save(updated, `Marked ${v.year} ${v.make} ${v.model} as ${ns}`);
   };
 
   return (
@@ -539,25 +542,14 @@ ${lines.join(',\n')}
       {editVehicle && <Modal title="Edit Vehicle" onClose={() => setEditVehicle(null)} wide><VehicleForm initial={editVehicle} onSave={handleEdit} onClose={() => setEditVehicle(null)} /></Modal>}
       {deleteId && <ConfirmModal message="Are you sure you want to delete this vehicle? This cannot be undone." onConfirm={() => handleDelete(deleteId)} onCancel={() => setDeleteId(null)} />}
 
-      <div className="flex flex-wrap gap-3 mb-4 items-center justify-between">
-        <h2 className="text-xl font-semibold text-white">Vehicle Inventory <span className="text-slate-500 text-base font-normal">({vehicles.length} total)</span></h2>
-        <div className="flex gap-2">
-          <button onClick={exportToFile} className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-amber-300 text-sm font-semibold border border-amber-500/30 flex items-center gap-2" title="Copy current inventory as code to publish to website">
-            ↑ Export & Publish
-          </button>
-          <button onClick={() => setShowAdd(true)} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold flex items-center gap-2">
-            + Add Vehicle
-          </button>
+      <div className="flex flex-wrap gap-3 mb-5 items-center justify-between">
+        <div>
+          <h2 className="text-xl font-semibold text-white">Vehicle Inventory <span className="text-slate-500 text-base font-normal">({vehicles.length} total)</span></h2>
+          {saving && <p className="text-xs text-amber-400 mt-0.5 animate-pulse">Publishing to website…</p>}
         </div>
-      </div>
-
-      <div className="mb-5 flex items-start gap-3 border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-xs text-amber-300">
-        <span className="flex-shrink-0 text-amber-500">⚠</span>
-        <span>
-          <strong>How changes go live:</strong> Edits here update this session only. To publish to the website, copy your changes into{' '}
-          <code className="bg-black/40 px-1 py-0.5 text-amber-200">app/data/inventory.ts</code>{' '}
-          and redeploy. The website reads directly from that file.
-        </span>
+        <button onClick={() => setShowAdd(true)} disabled={saving} className="px-4 py-2 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-black text-sm font-bold">
+          + Add Vehicle
+        </button>
       </div>
 
       <div className="flex flex-wrap gap-3 mb-5">

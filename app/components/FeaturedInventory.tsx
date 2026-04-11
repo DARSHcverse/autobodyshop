@@ -1,24 +1,20 @@
 import Link from 'next/link'
 import VehicleCard from './VehicleCard'
-import { FEATURED_INVENTORY, type InventoryVehicle } from '../data/inventory'
+import { getInventory, type InventoryVehicle } from '../data/getInventory'
 
 function toCardData(v: InventoryVehicle) {
   return {
-    make: v.make,
-    model: v.model,
-    year: v.year,
-    price: v.price,
-    km: v.odometer,
-    fuel: v.fuelType,
-    trans: v.transmission,
-    body: v.bodyType,
-    badge: v.badge,
-    accent: v.accent,
-    badgeTone: v.badgeTone,
+    make: v.make, model: v.model, year: v.year,
+    price: v.price, km: v.odometer,
+    fuel: v.fuelType, trans: v.transmission, body: v.bodyType,
+    badge: v.badge, accent: v.accent, badgeTone: v.badgeTone,
   }
 }
 
-export default function FeaturedInventory() {
+export default async function FeaturedInventory() {
+  const all = await getInventory()
+  const featured = all.filter(v => v.featured && v.status === 'Available').slice(0, 4)
+
   return (
     <section className="relative overflow-hidden bg-crown-lowest py-20" id="inventory">
       <div className="hero-glow left-1/2 top-1/2 h-80 w-[48rem] -translate-x-1/2 -translate-y-1/2 bg-gold-600" />
@@ -34,17 +30,13 @@ export default function FeaturedInventory() {
               Engineered for <span className="gold-text">excellence.</span>
             </h2>
           </div>
-
-          <Link
-            href="/inventory"
-            className="btn-outline-gold inline-flex self-start px-7 py-4 text-[0.72rem]"
-          >
+          <Link href="/inventory" className="btn-outline-gold inline-flex self-start px-7 py-4 text-[0.72rem]">
             View All Cars
           </Link>
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {FEATURED_INVENTORY.map((car) => (
+          {featured.map((car) => (
             <VehicleCard key={car.id} car={toCardData(car)} href="/inventory" />
           ))}
         </div>
