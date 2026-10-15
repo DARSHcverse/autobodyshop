@@ -127,12 +127,24 @@ export default function Footer() {
 
         <div className="flex flex-col gap-4 text-xs text-white/38 md:flex-row md:items-center md:justify-between">
           <p>© {new Date().getFullYear()} Crown Auto Trading. All rights reserved.</p>
-          <div className="flex gap-5">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <span>Privacy Policy</span>
             <span>Terms of Service</span>
             <Link href="/sitemap.xml" className="transition-colors duration-300 hover:text-gold-300">
               Sitemap
             </Link>
+            <span className="text-white/50 md:border-l md:border-white/10 md:pl-5">
+              Website By{' '}
+              <a
+                href="https://www.tradewebco.co.uk"
+                target="_blank"
+                rel="noopener"
+                title="Websites for UK tradespeople"
+                className="font-semibold text-gold-300/80 transition-colors duration-300 hover:text-gold-300"
+              >
+                Trade Web Co
+              </a>
+            </span>
           </div>
         </div>
       </div>
